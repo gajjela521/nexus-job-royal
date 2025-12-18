@@ -35,7 +35,9 @@ function App() {
               N
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-100 tracking-tight">NEXUS</h1>
+              <h1 className="text-xl font-bold text-slate-100 tracking-tight">
+                NEXUS <span className="text-[10px] text-slate-500 font-normal opacity-50 ml-1">by GST</span>
+              </h1>
               <p className="text-[10px] text-accent-gold uppercase tracking-[0.2em]">Royal Edition</p>
             </div>
           </div>
