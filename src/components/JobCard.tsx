@@ -2,7 +2,7 @@
 import { clsx } from 'clsx';
 import { ExternalLink, Clock, MapPin, Building2 } from 'lucide-react';
 import type { Job } from '../hooks/useJobPoller';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 
 interface JobCardProps {
     job: Job;
@@ -40,9 +40,14 @@ export const JobCard = ({ job }: JobCardProps) => {
                     <MapPin className="w-3.5 h-3.5" />
                     {job.location}
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 justify-end">
-                    <Clock className="w-3.5 h-3.5" />
-                    {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
+                <div className="flex flex-col items-end gap-0.5 text-xs text-slate-500">
+                    <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
+                    </div>
+                    <span className="text-[10px] text-slate-600 font-mono">
+                        {format(new Date(job.postedAt), "MMM d, h:mm a")}
+                    </span>
                 </div>
             </div>
 
