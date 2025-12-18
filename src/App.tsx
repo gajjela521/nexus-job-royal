@@ -2,8 +2,11 @@
 import { useState } from 'react';
 import { useJobPoller } from './hooks/useJobPoller';
 import { JobCard } from './components/JobCard';
+import { LayoffChart } from './components/LayoffChart';
+import { GrowthStats } from './components/GrowthStats';
 import { StatsChart } from './components/StatsChart';
-import { LayoutDashboard, Search } from 'lucide-react';
+import { WARN_SITES } from './data/warnSites';
+import { LayoutDashboard, Search, ExternalLink } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 
@@ -58,25 +61,64 @@ function App() {
             )}
           </div>
         </div>
+
+        {/* WARN Links */}
+        <div className="flex-1 p-4 border-t border-slate-800/50 min-h-0 overflow-hidden flex flex-col">
+          <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 font-bold px-1">US State WARN Sites</div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+            {Object.entries(WARN_SITES).map(([state, url]) => (
+              <a
+                key={state}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-white/5 hover:text-accent-gold transition-colors"
+                title={`${state} WARN Notices`}
+              >
+                <span>{state}</span>
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </a>
+            ))}
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 ml-64 p-8 relative">
         <div className="fixed top-0 left-64 right-0 h-48 bg-gradient-to-b from-royal-950/90 to-transparent pointer-events-none z-0"></div>
 
-        <header className="relative z-10 flex items-end justify-between mb-12">
-          <div>
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-slate-100 to-slate-500 bg-clip-text text-transparent mb-2">Executive Dashboard</h2>
-            <p className="text-slate-400">Real-time enterprise job aggregation from official channels.</p>
+        <header className="relative z-10 flex flex-col mb-12">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-slate-100 to-slate-500 bg-clip-text text-transparent mb-2">Executive Dashboard</h2>
+              <p className="text-slate-400">Real-time enterprise job aggregation from official channels.</p>
+            </div>
+
+            {/* Total Active Badge */}
+            <div className="bg-royal-900 border border-slate-800 px-6 py-3 rounded-xl flex flex-col items-end">
+              <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Total Active Jobs</div>
+              <div className="text-3xl font-bold text-white">{jobs.length}</div>
+            </div>
           </div>
 
-          <div className="flex gap-6">
-            <div className="bg-royal-900 border border-slate-800 p-4 rounded-xl min-w-[140px]">
-              <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Total Active</div>
-              <div className="text-2xl font-bold text-white">{jobs.length}</div>
+          {/* Metrics Row */}
+          <div className="grid grid-cols-4 gap-6 mb-2">
+            {/* Growth Metrics */}
+            <div className="col-span-2 flex flex-col justify-end">
+              <GrowthStats jobs={jobs} filter={filter} />
             </div>
-            <div className="bg-royal-900 border border-slate-800 p-4 rounded-xl min-w-[200px]">
-              <StatsChart jobs={jobs} />
+
+            {/* Job Mix Chart */}
+            <div className="bg-royal-900 border border-slate-800 p-4 rounded-xl relative h-40">
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2 absolute top-4 left-4">Current Mix</div>
+              <div className="h-28 mt-4">
+                <StatsChart jobs={jobs} />
+              </div>
+            </div>
+
+            {/* Layoff Chart */}
+            <div className="h-40">
+              <LayoffChart />
             </div>
           </div>
         </header>
