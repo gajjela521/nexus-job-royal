@@ -1,0 +1,71 @@
+name: Nexus Job Dashboard Pipeline
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+permissions:
+    contents: write
+
+jobs:
+    # STAGE 1: DEV (Integration & Unit Check)
+    dev-check:
+        name: "Stage 1: Dev (Test & Lint)"
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+                  cache: "npm"
+            - name: Install Dependencies
+              run: npm ci
+            - name: Lint
+              run: npm run lint
+            - name: Run Tests (Unit & Component)
+              run: npm test run
+
+    # STAGE 2: ACCEPTANCE (Build Verification)
+    acceptance:
+        name: "Stage 2: Acceptance (Build)"
+        needs: dev-check
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+                  cache: "npm"
+            - name: Install Dependencies
+              run: npm ci
+            - name: Build Application
+              run: npm run build
+            - name: Upload Build Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+
+    # STAGE 3: PROD (Live Deployment)
+    deploy-prod:
+        name: "Stage 3: Prod (Deploy)"
+        needs: acceptance
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Download Build Artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+            - name: Deploy to GitHub Pages
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: ./dist
+                  publish_branch: gh-pages
