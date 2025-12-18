@@ -32,7 +32,7 @@ export const GrowthStats = ({ jobs, filter }: GrowthStatsProps) => {
 
     const weekGrowth = lastWeekCount === 0 ? (thisWeekCount > 0 ? 100 : 0) : Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100);
 
-    const StatCard = ({ label, count, growth, period }: any) => (
+    const StatCard = ({ label, count, growth, period }: { label: string; count: number; growth: number; period: string }) => (
         <div className="bg-royal-900 border border-slate-800 p-4 rounded-xl flex-1">
             <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">{label}</div>
             <div className="flex items-end gap-3">
