@@ -6,8 +6,7 @@ import { LayoffChart } from './components/LayoffChart';
 import { GrowthStats } from './components/GrowthStats';
 import { StatsChart } from './components/StatsChart';
 import { LayoffPage } from './components/LayoffPage';
-import { WARN_SITES } from './data/warnSites';
-import { LayoutDashboard, Search, ExternalLink, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Search, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 
@@ -76,25 +75,6 @@ function App() {
           </div>
         </div>
 
-        {/* WARN Links */}
-        <div className="flex-1 p-4 border-t border-slate-800/50 min-h-0 overflow-hidden flex flex-col">
-          <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 font-bold px-1">US State WARN Sites</div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1">
-            {Object.entries(WARN_SITES).map(([state, url]) => (
-              <a
-                key={state}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-white/5 hover:text-accent-gold transition-colors"
-                title={`${state} WARN Notices`}
-              >
-                <span>{state}</span>
-                <ExternalLink className="w-3 h-3 opacity-50" />
-              </a>
-            ))}
-          </div>
-        </div>
       </aside>
 
       {/* Main Content */}
