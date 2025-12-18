@@ -5,14 +5,16 @@ import { JobCard } from './components/JobCard';
 import { LayoffChart } from './components/LayoffChart';
 import { GrowthStats } from './components/GrowthStats';
 import { StatsChart } from './components/StatsChart';
+import { LayoffPage } from './components/LayoffPage';
 import { WARN_SITES } from './data/warnSites';
-import { LayoutDashboard, Search, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Search, ExternalLink, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 
 function App() {
   const { jobs, loading, lastUpdated, isPolling } = useJobPoller(3600000); // 1 hour poll in real usage, simulated fast in hook
   const [filter, setFilter] = useState<'ALL' | 'CONTRACT' | 'FULL_TIME'>('ALL');
+  const [view, setView] = useState<'DASHBOARD' | 'LAYOFFS'>('DASHBOARD');
   const [search, setSearch] = useState('');
 
   const filteredJobs = jobs.filter(job => {
@@ -41,9 +43,19 @@ function App() {
 
         <nav className="flex-1 p-4 space-y-2">
           <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">Dashboard</div>
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-accent-gold font-bold text-sm shadow-xl">
+          <button
+            onClick={() => setView('DASHBOARD')}
+            className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all", view === 'DASHBOARD' ? "bg-white/5 border border-white/10 text-accent-gold shadow-xl" : "text-slate-500 hover:text-slate-300")}
+          >
             <LayoutDashboard className="w-4 h-4" />
             Live Feed
+          </button>
+          <button
+            onClick={() => setView('LAYOFFS')}
+            className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all", view === 'LAYOFFS' ? "bg-white/5 border border-white/10 text-red-400 shadow-xl" : "text-slate-500 hover:text-slate-300")}
+          >
+            <AlertTriangle className="w-4 h-4" />
+            Layoff Intel
           </button>
         </nav>
 
@@ -84,99 +96,104 @@ function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8 relative">
+      <main className="flex-1 ml-64 relative">
         <div className="fixed top-0 left-64 right-0 h-48 bg-gradient-to-b from-royal-950/90 to-transparent pointer-events-none z-0"></div>
 
-        <header className="relative z-10 flex flex-col mb-12">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-slate-100 to-slate-500 bg-clip-text text-transparent mb-2">Executive Dashboard</h2>
-              <p className="text-slate-400">Real-time enterprise job aggregation from official channels.</p>
-            </div>
+        {view === 'DASHBOARD' ? (
+          <div className="p-8 relative z-10">
+            <header className="flex flex-col mb-12">
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <h2 className="text-4xl font-bold bg-gradient-to-r from-slate-100 to-slate-500 bg-clip-text text-transparent mb-2">Executive Dashboard</h2>
+                  <p className="text-slate-400">Real-time enterprise job aggregation from official channels.</p>
+                </div>
 
-            {/* Total Active Badge */}
-            <div className="bg-royal-900 border border-slate-800 px-6 py-3 rounded-xl flex flex-col items-end">
-              <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Total Active Jobs</div>
-              <div className="text-3xl font-bold text-white">{jobs.length}</div>
-            </div>
-          </div>
+                {/* Total Active Badge */}
+                <div className="bg-royal-900 border border-slate-800 px-6 py-3 rounded-xl flex flex-col items-end">
+                  <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Total Active Jobs</div>
+                  <div className="text-3xl font-bold text-white">{jobs.length}</div>
+                </div>
+              </div>
 
-          {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-6 mb-2">
-            {/* Growth Metrics */}
-            <div className="col-span-2 flex flex-col justify-end">
-              <GrowthStats jobs={jobs} filter={filter} />
-            </div>
+              {/* Metrics Row */}
+              <div className="grid grid-cols-4 gap-6 mb-2">
+                {/* Growth Metrics */}
+                <div className="col-span-2 flex flex-col justify-end">
+                  <GrowthStats jobs={jobs} filter={filter} />
+                </div>
 
-            {/* Job Mix Chart */}
-            <div className="bg-royal-900 border border-slate-800 p-4 rounded-xl relative h-40">
-              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2 absolute top-4 left-4">Current Mix</div>
-              <div className="h-28 mt-4">
-                <StatsChart jobs={jobs} />
+                {/* Job Mix Chart */}
+                <div className="bg-royal-900 border border-slate-800 p-4 rounded-xl relative h-40">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2 absolute top-4 left-4">Current Mix</div>
+                  <div className="h-28 mt-4">
+                    <StatsChart jobs={jobs} />
+                  </div>
+                </div>
+
+                {/* Layoff Chart Widget */}
+                <div className="h-40 cursor-pointer" onClick={() => setView('LAYOFFS')}>
+                  <LayoffChart />
+                </div>
+              </div>
+            </header>
+
+            {/* Controls */}
+            <div className="flex items-center justify-between mb-8 sticky top-4 bg-royal-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800/50 shadow-2xl z-20">
+              <div className="flex items-center gap-2 bg-royal-900 border border-slate-700 rounded-lg px-3 py-2 w-96 focus-within:ring-1 focus-within:ring-accent-gold/50 transition-all">
+                <Search className="w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search companies, roles..."
+                  className="bg-transparent border-none focus:outline-none text-sm w-full placeholder-slate-600"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFilter('ALL')}
+                  className={clsx("px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all", filter === 'ALL' ? "bg-accent-gold text-royal-950 shadow-[0_0_15px_rgba(251,191,36,0.3)]" : "bg-royal-900 border border-slate-700 text-slate-400 hover:text-white")}
+                >
+                  All Jobs
+                </button>
+                <button
+                  onClick={() => setFilter('FULL_TIME')}
+                  className={clsx("px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all", filter === 'FULL_TIME' ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]" : "bg-royal-900 border border-slate-700 text-slate-400 hover:text-white")}
+                >
+                  Full Time
+                </button>
+                <button
+                  onClick={() => setFilter('CONTRACT')}
+                  className={clsx("px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all", filter === 'CONTRACT' ? "bg-emerald-500 text-royal-950 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-royal-900 border border-slate-700 text-slate-400 hover:text-white")}
+                >
+                  Contract
+                </button>
               </div>
             </div>
 
-            {/* Layoff Chart */}
-            <div className="h-40">
-              <LayoffChart />
+            {/* Job Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-0">
+              {loading ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-500">
+                  <div className="w-12 h-12 border-4 border-accent-gold border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-sm font-mono animate-pulse">ESTABLISHING SECURE CONNECTIONS...</p>
+                </div>
+              ) : (
+                filteredJobs.map(job => (
+                  <JobCard key={job.id} job={job} />
+                ))
+              )}
+              {!loading && filteredJobs.length === 0 && (
+                <div className="col-span-full text-center py-20 text-slate-500">
+                  No jobs found matching parameters.
+                </div>
+              )}
             </div>
           </div>
-        </header>
-
-        {/* Controls */}
-        <div className="relative z-10 flex items-center justify-between mb-8 sticky top-4 bg-royal-950/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800/50 shadow-2xl">
-          <div className="flex items-center gap-2 bg-royal-900 border border-slate-700 rounded-lg px-3 py-2 w-96 focus-within:ring-1 focus-within:ring-accent-gold/50 transition-all">
-            <Search className="w-4 h-4 text-slate-500" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search companies, roles..."
-              className="bg-transparent border-none focus:outline-none text-sm w-full placeholder-slate-600"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('ALL')}
-              className={clsx("px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all", filter === 'ALL' ? "bg-accent-gold text-royal-950 shadow-[0_0_15px_rgba(251,191,36,0.3)]" : "bg-royal-900 border border-slate-700 text-slate-400 hover:text-white")}
-            >
-              All Jobs
-            </button>
-            <button
-              onClick={() => setFilter('FULL_TIME')}
-              className={clsx("px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all", filter === 'FULL_TIME' ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]" : "bg-royal-900 border border-slate-700 text-slate-400 hover:text-white")}
-            >
-              Full Time
-            </button>
-            <button
-              onClick={() => setFilter('CONTRACT')}
-              className={clsx("px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all", filter === 'CONTRACT' ? "bg-emerald-500 text-royal-950 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-royal-900 border border-slate-700 text-slate-400 hover:text-white")}
-            >
-              Contract
-            </button>
-          </div>
-        </div>
-
-        {/* Job Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-0">
-          {loading ? (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-500">
-              <div className="w-12 h-12 border-4 border-accent-gold border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-sm font-mono animate-pulse">ESTABLISHING SECURE CONNECTIONS...</p>
-            </div>
-          ) : (
-            filteredJobs.map(job => (
-              <JobCard key={job.id} job={job} />
-            ))
-          )}
-          {!loading && filteredJobs.length === 0 && (
-            <div className="col-span-full text-center py-20 text-slate-500">
-              No jobs found matching parameters.
-            </div>
-          )}
-        </div>
-
+        ) : (
+          <LayoffPage />
+        )}
       </main>
     </div>
   );
